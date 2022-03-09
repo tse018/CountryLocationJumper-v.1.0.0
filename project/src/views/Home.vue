@@ -1,35 +1,17 @@
 <template>
-<div id='map'></div>
-
+   <MapBox />
 </template>
 
 <script>
-import mapboxgl from "mapbox-gl";
+import MapBox from '../components/MapBox.vue';
 
 export default {
-   data() {
-      return {
-         mapbox_id: import.meta.env.VITE_MAPBOX_ID,
-      };
+   components: {
+      MapBox,
    },
 
-   mounted() {
-      mapboxgl.accessToken = this.mapbox_id;
-      const map = new mapboxgl.Map({
-         container: "map", // container ID
-         style: "mapbox://styles/mapbox/streets-v11", // style URL
-         center: [52.519325, 13.392709], // starting position [lng, lat]
-         zoom: 1, // starting zoom
-      });
-   },
-};
+}
 </script>
 
-<style scoped>
-#map {
-   width: 100vw; 
-   height: 100vh;
-   margin: 0px;
-   padding: 0px
-}
+<style>
 </style>

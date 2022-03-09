@@ -1,5 +1,7 @@
+import countryDatabase from './modules/countryDatabase.js';
+
 export default {
-   state() {
-      return {}
+   modules: {
+      countryDatabase,
    }
 };
