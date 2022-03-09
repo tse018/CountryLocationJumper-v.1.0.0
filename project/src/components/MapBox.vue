@@ -18,11 +18,6 @@ export default {
       // fetching rest-countries API from the store and using getter to get the values
       this.countries = await this.$store.dispatch("fectCountryApi");
       this.countries = this.$store.getters.getCountries;
-
-      //console.log(this.countries)
-
-      //this.countries = this.filteredVersion;
-      //console.log(this.filteredVersion)
    },
 
    mounted() {
@@ -43,8 +38,12 @@ export default {
             return {
                type: "Feature",
                properties: {
-                  message: country.name.official,
+                  message: "foo",
                   iconSize: [60, 60],
+                  title: country.name.official,
+                  capital: country.capital[0],
+                  languages: country.languages,
+                  continents: country.continents[0],
                },
                geometry: {
                   type: "Point",
@@ -54,6 +53,8 @@ export default {
                   ],
                },
             };
+
+            
          });
 
          return {
@@ -61,6 +62,7 @@ export default {
             features: countryDetails,
          };
       },
+
 
       createMarkers(map) {
          for (const marker of countryDetails.features) {
