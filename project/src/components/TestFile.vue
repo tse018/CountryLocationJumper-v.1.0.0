@@ -53,6 +53,8 @@ export default {
          };
       });
 */
+
+/*
       const geojson = {
          type: "FeatureCollection",
          features: [
@@ -91,7 +93,7 @@ export default {
             },
          ],
       };
-
+*/
       const map = new mapboxgl.Map({
          container: "map",
          style: "mapbox://styles/mapbox/streets-v11",

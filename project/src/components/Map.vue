@@ -9,36 +9,26 @@ export default {
    data() {
       return {
          mapbox_id: import.meta.env.VITE_MAPBOX_ID,
+
+         // getting all the values stored from rest-api
          countries: [],
       };
    },
 
    async created() {
+      // fetching rest-countries API from the store and using getter to get the values
       this.countries = await this.$store.dispatch("fetchCountryApi");
       this.countries = this.$store.getters.getCountries;
-
-      this.countries = this.filteringCountriesValues();
-      console.log(this.countries)
    },
 
    mounted() {
       mapboxgl.accessToken = this.mapbox_id;
 
-      const map = new mapboxgl.Map({
-         container: "map",
-         style: "mapbox://styles/mapbox/streets-v11",
-         center: [-65.017, -16.457],
-         zoom: 5,
-      });
-   },
-
-   methods: {
-      filteringCountriesValues() {
-         const countryDetails = this.countries.map((country) => {
+      const countryDetails = this.countries.map((country) => {
             return {
                type: "Feature",
                properties: {
-                  message: "Foo",
+                  message: "foo",
                   iconSize: [60, 60],
                   title: country.name.official,
                   capital: country.capital,
@@ -47,7 +37,47 @@ export default {
                },
                geometry: {
                   type: "Point",
-                  coordinates: [country.latlng[1], country.latlng[0]],
+                  coordinates: [
+                     country.latlng[1],
+                     country.latlng[0],
+                  ],
+               },
+            };
+         });
+
+         return {
+            type: "FeatureCollection",
+            features: countryDetails,
+         };
+   }};
+
+      // starting point when uploading the the page
+      const map = new mapboxgl.Map({
+         container: "map", // container ID
+         style: "mapbox://styles/mapbox/streets-v11", // style URL
+         center: [8.0, 60.0], // starting position [lng, lat]
+         zoom: 3, // starting zoom
+      });
+/*
+   methods: {
+      filteringCountriesValues() {
+         const countryDetails = this.countries.map((country) => {
+            return {
+               type: "Feature",
+               properties: {
+                  message: "foo",
+                  iconSize: [60, 60],
+                  title: country.name.official,
+                  capital: country.capital,
+                  languages: country.languages,
+                  continents: country.continents[0],
+               },
+               geometry: {
+                  type: "Point",
+                  coordinates: [
+                     country.latlng[1],
+                     country.latlng[0],
+                  ],
                },
             };
          });
@@ -57,8 +87,8 @@ export default {
             features: countryDetails,
          };
       },
-
-      createMarkers() {
+*/
+      createMarkers(map) {
          for (const marker of countryDetails.features) {
             // Create a DOM element for each marker.
             const el = document.createElement("div");
@@ -84,12 +114,12 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 #map {
    width: 100vw;
    height: 100vh;
-   margin: 0;
-   padding: 0;
+   margin: 0px;
+   padding: 0px;
 }
 
 .marker {
