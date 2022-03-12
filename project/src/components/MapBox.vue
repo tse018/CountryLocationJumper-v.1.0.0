@@ -1,5 +1,8 @@
 <template>
    <div id="geocoder" class="geocoder"></div>
+
+   <button id="fly">Go To Start posistion</button>
+
    <div id="map"></div>
 </template>
 
@@ -45,31 +48,12 @@ export default {
 
          this.createMarkers(map);
          this.searchLocationGeoCoder(map);
+         this.navigationControllers(map);
+         this.goBackToStartPosistion(map);
+         this.borderColor(map);
+         this.colorEachCountries(map);
          //this.whenSearchedPopUpMarkersOnClicked(map);
          //this.addPolygon(map);
-
-         map.on("load", () => {
-            map.addSource("country-boundaries-simplified", {
-               type: "vector",
-               url: "mapbox://examples.countries-simplification",
-            });
-
-            map.addLayer({
-               id: "countries-simplification-data",
-               type: "line",
-               source: "country-boundaries-simplified",
-               "source-layer": "countries_polygons",
-               layout: {
-                  "line-join": "round",
-                  "line-cap": "round",
-               },
-               paint: {
-                  "line-color":
-                     "#" + Math.floor(Math.random() * 16777215).toString(16),
-                  "line-width": 1,
-               },
-            });
-         });
       },
 
       // mapping a new array of objects like how mapbox geoJson file looks like
@@ -100,6 +84,7 @@ export default {
          };
       },
 
+      // working progress - adding polygon colors for each countries
       creatingGeoJsonPolygon() {
          map.on("load", () => {
             map.addSource("maine", {});
@@ -109,12 +94,27 @@ export default {
       searchLocationGeoCoder(map) {
          const geocoder = new MapboxGeocoder({
             accessToken: mapboxgl.accessToken,
-            marker: {
-               marker: false,
-               backgroundColor: "transparent",
-            },
-            placeholder: "Search for a country",
+
             mapboxgl: mapboxgl,
+
+            /* geocoder input field placeholder */
+            placeholder: "Search for a country",
+
+            /* adding easing in-out animation when searching for country  */
+            flyTo: {
+               bearing: 0,
+
+               // Control the flight curve, making it move slowly and
+               // zoom out almost completely before starting to pan.
+               speed: 0.2, // Make the flying slow.
+               curve: 4, // Change the speed at which it zooms out.
+
+               // This can be any easing function: it takes a number between
+               // 0 and 1 and returns another number between 0 and 1.
+               easing: (posistion) => {
+                  return posistion;
+               },
+            },
          });
 
          // trying to add place details when user search on a country
@@ -143,8 +143,93 @@ export default {
             // Add markers to the map.
             new mapboxgl.Marker(el)
                .setLngLat(marker.geometry.coordinates)
+               .setLngLat(marker.geometry.coordinates)
                .addTo(map);
          }
+      },
+
+      // zoom in - out button
+      navigationControllers(map) {
+         map.addControl(new mapboxgl.NavigationControl());
+      },
+
+      // working progress - add button to reset / go back to start posistion
+      goBackToStartPosistion(map) {
+         let isAtStart = true;
+
+         const target = isAtStart ? "" : "";
+
+         isAtStart = !isAtStart;
+
+         map.flyTo({
+            // These options control the ending camera position: centered at
+            // the target, at zoom level 9, and north up.
+            center: target,
+            zoom: 2,
+            bearing: 0,
+
+            // These options control the flight curve, making it move
+            // slowly and zoom out almost completely before starting
+            // to pan.
+            speed: 0.2, // make the flying slow
+            curve: 1, // change the speed at which it zooms out
+
+            // This can be any easing function: it takes a number between
+            // 0 and 1 and returns another number between 0 and 1.
+            easing: (t) => t,
+
+            // this animation is considered essential with respect to prefers-reduced-motion
+            essential: true,
+         });
+      },
+
+      // 
+      colorEachCountries(map) {
+         map.on("load", function () {
+            map.addLayer(
+               {
+                  id: "country-boundaries",
+                  source: {
+                     type: "vector",
+                     url: "mapbox://mapbox.country-boundaries-v1",
+                  },
+                  "source-layer": "country_boundaries",
+                  type: "fill",
+                  paint: {
+                     "fill-color": "#d2361e",
+                     "fill-opacity": 0.4,
+                  },
+               },
+               "country-label"
+            );
+
+            map.setFilter("country-boundaries", ["iso_3166_1_alpha_3"]);
+         });
+      },
+
+      borderColor(map) {
+         map.on("load", () => {
+            map.addSource("country-boundaries-simplified", {
+               type: "vector",
+               url: "mapbox://examples.countries-simplification",
+            });
+
+            map.addLayer({
+               id: "countries-simplification-data",
+               type: "line",
+               source: "country-boundaries-simplified",
+               "source-layer": "countries_polygons",
+               layout: {
+                  "line-join": "round",
+                  "line-cap": "round",
+               },
+               paint: {
+                  "line-color":
+                     "#" + Math.floor(Math.random() * 16777215).toString(16),
+                  "line-width": 1,
+               },
+            });
+         });
       },
    },
 };
@@ -294,11 +379,19 @@ export default {
    padding: 0;
 }
 
-.marker {
+#fly {
    display: block;
+   position: relative;
+   margin: 40px auto;
+   width: 50%;
+   height: 40px;
+   padding: 10px;
    border: none;
-   cursor: pointer;
-   padding: 0;
+   border-radius: 3px;
+   font-size: 12px;
+   text-align: center;
+   color: #fff;
+   background: #ee8a65;
 }
 
 .geocoder {
