@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/tse018/vue_starter_template#readme",
   "dependencies": {
+    "@mapbox/mapbox-gl-geocoder": "^5.0.0",
     "mapbox-gl": "^2.7.0",
     "vue": "^3.2.24",
     "vue-router": "^4.0.12",

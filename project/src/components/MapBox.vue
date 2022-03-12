@@ -1,15 +1,20 @@
 <template>
+   <div id="geocoder" class="geocoder"></div>
    <div id="map"></div>
 </template>
 
 <script>
 import mapboxgl from "mapbox-gl";
+import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
 
 export default {
    data() {
       return {
          mapbox_id: import.meta.env.VITE_MAPBOX_ID,
          countries: [],
+         markers: [],
+         polygon: [],
+         popUp: [],
       };
    },
 
@@ -17,33 +22,70 @@ export default {
       this.countries = await this.$store.dispatch("fetchCountryApi");
       this.countries = this.$store.getters.getCountries;
 
-      this.countries = this.filteringCountriesValues();
-      console.log(this.countries)
-   },
+      // the new mapped geoJson file created in the methods, will be stored in this.markers array from data()
+      this.markers = this.creatingGeoJsonMarkers();
 
-   mounted() {
-      mapboxgl.accessToken = this.mapbox_id;
+      //this.polygon
+      //this.popUp
 
-      const map = new mapboxgl.Map({
-         container: "map",
-         style: "mapbox://styles/mapbox/streets-v11",
-         center: [-65.017, -16.457],
-         zoom: 5,
-      });
+      this.creatingMapFromMapBox();
    },
 
    methods: {
-      filteringCountriesValues() {
+      creatingMapFromMapBox() {
+         mapboxgl.accessToken = this.mapbox_id;
+
+         // creating the map to the browser and giving start posistion
+         const map = new mapboxgl.Map({
+            container: "map",
+            style: "mapbox://styles/mapbox/streets-v11",
+            center: [10, 30],
+            zoom: 2,
+         });
+
+         this.createMarkers(map);
+         this.searchLocationGeoCoder(map);
+         //this.whenSearchedPopUpMarkersOnClicked(map);
+         //this.addPolygon(map);
+
+         map.on("load", () => {
+            map.addSource("country-boundaries-simplified", {
+               type: "vector",
+               url: "mapbox://examples.countries-simplification",
+            });
+
+            map.addLayer({
+               id: "countries-simplification-data",
+               type: "line",
+               source: "country-boundaries-simplified",
+               "source-layer": "countries_polygons",
+               layout: {
+                  "line-join": "round",
+                  "line-cap": "round",
+               },
+               paint: {
+                  "line-color":
+                     "#" + Math.floor(Math.random() * 16777215).toString(16),
+                  "line-width": 1,
+               },
+            });
+         });
+      },
+
+      // mapping a new array of objects like how mapbox geoJson file looks like
+      creatingGeoJsonMarkers() {
          const countryDetails = this.countries.map((country) => {
             return {
                type: "Feature",
                properties: {
-                  message: "Foo",
-                  iconSize: [60, 60],
+                  message: country.name.official,
+                  iconSize: [30, 30],
                   title: country.name.official,
                   capital: country.capital,
                   languages: country.languages,
                   continents: country.continents[0],
+                  flags: country.cca2.toLowerCase(),
+                  description: country.name.offical + country.region,
                },
                geometry: {
                   type: "Point",
@@ -58,21 +100,45 @@ export default {
          };
       },
 
-      createMarkers() {
-         for (const marker of countryDetails.features) {
+      creatingGeoJsonPolygon() {
+         map.on("load", () => {
+            map.addSource("maine", {});
+         });
+      },
+
+      searchLocationGeoCoder(map) {
+         const geocoder = new MapboxGeocoder({
+            accessToken: mapboxgl.accessToken,
+            marker: {
+               marker: false,
+               backgroundColor: "transparent",
+            },
+            placeholder: "Search for a country",
+            mapboxgl: mapboxgl,
+         });
+
+         // trying to add place details when user search on a country
+         geocoder.on("result", function ({ result }) {
+            console.log(result.place_name);
+         });
+
+         document.getElementById("geocoder").appendChild(geocoder.onAdd(map));
+      },
+
+      createMarkers(map) {
+         for (const marker of this.markers.features) {
             // Create a DOM element for each marker.
             const el = document.createElement("div");
             const width = marker.properties.iconSize[0];
             const height = marker.properties.iconSize[1];
             el.className = "marker";
-            el.style.backgroundImage = `url(https://placekitten.com/g/${width}/${height}/)`;
+
+            /* using countryflagsapi to get all the flags pictures to showcase as icons */
+            el.style.backgroundImage = `url(https://countryflagsapi.com/svg/${marker.properties.flags})`;
+            el.style.backgroundRepeat = "no-repeat";
             el.style.width = `${width}px`;
             el.style.height = `${height}px`;
             el.style.backgroundSize = "100%";
-
-            el.addEventListener("click", () => {
-               window.alert(marker.properties.message);
-            });
 
             // Add markers to the map.
             new mapboxgl.Marker(el)
@@ -82,21 +148,181 @@ export default {
       },
    },
 };
+
+/*
+      addPolygon(map) {
+         map.on("load", () => {
+            // Add a data source containing GeoJSON data.
+            map.addSource("maine", {
+               type: "geojson",
+               data: {
+                  type: "Feature",
+                  geometry: {
+                     type: "Polygon",
+                     // These coordinates outline Maine.
+                     coordinates: [
+                        [
+                           [-67.13734, 45.13745],
+                           [-66.96466, 44.8097],
+                           [-68.03252, 44.3252],
+                           [-69.06, 43.98],
+                           [-70.11617, 43.68405],
+                           [-70.64573, 43.09008],
+                           [-70.75102, 43.08003],
+                           [-70.79761, 43.21973],
+                           [-70.98176, 43.36789],
+                           [-70.94416, 43.46633],
+                           [-71.08482, 45.30524],
+                           [-70.66002, 45.46022],
+                           [-70.30495, 45.91479],
+                           [-70.00014, 46.69317],
+                           [-69.23708, 47.44777],
+                           [-68.90478, 47.18479],
+                           [-68.2343, 47.35462],
+                           [-67.79035, 47.06624],
+                           [-67.79141, 45.70258],
+                           [-67.13734, 45.13745],
+                        ],
+                     ],
+                  },
+               },
+            });
+         });
+
+         // Add a new layer to visualize the polygon.
+         map.addLayer({
+            id: "maine",
+            type: "fill",
+            source: "maine", // reference the data source
+            layout: {},
+            paint: {
+               "fill-color": "#0080ff", // blue color fill
+               "fill-opacity": 0.5,
+            },
+         });
+
+         // Add a black outline around the polygon.
+         map.addLayer({
+            id: "outline",
+            type: "line",
+            source: "maine",
+            layout: {},
+            paint: {
+               "line-color": "#000",
+               "line-width": 3,
+            },
+         });
+      },
+*/
+
+/*
+      whenSearchedPopUpMarkersOnClicked(map) {
+         map.on("load", () => {
+            map.addSource("places", {
+               type: "Feature",
+               properties: {
+                  message: country.name.official,
+                  iconSize: [30, 30],
+                  title: country.name.official,
+                  capital: country.capital,
+                  languages: country.languages,
+                  continents: country.continents[0],
+                  flags: country.cca2.toLowerCase(),
+                  description: country.name.offical + country.region,
+               },
+               geometry: {
+                  type: "Point",
+                  coordinates: [country.latlng[1], country.latlng[0]],
+               },
+            });
+
+            return {
+               type: "FeatureCollection",
+               features: countryDetails,
+            };
+         });
+
+         // Add a layer showing the places.
+         map.addLayer({
+            id: "places",
+            type: "symbol",
+            source: "places",
+            layout: {
+               "icon-image": "{icon}",
+               "icon-allow-overlap": true,
+            },
+         });
+
+         // When a click event occurs on a feature in the places layer, open a popup at the
+         // location of the feature, with description HTML from its properties.
+         map.on("click", "places", (e) => {
+            // Copy coordinates array.
+            const coordinates = e.features[0].geometry.coordinates.slice();
+            const description = e.features[0].properties.description;
+
+            // Ensure that if the map is zoomed out such that multiple
+            // copies of the feature are visible, the popup appears
+            // over the copy being pointed to.
+            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+               coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+            }
+
+            new mapboxgl.Popup()
+               .setLngLat(coordinates)
+               .setHTML(description)
+               .addTo(map);
+         });
+
+         // Change the cursor to a pointer when the mouse is over the places layer.
+         map.on("mouseenter", "places", () => {
+            map.getCanvas().style.cursor = "pointer";
+         });
+
+         // Change it back to a pointer when it leaves.
+         map.on("mouseleave", "places", () => {
+            map.getCanvas().style.cursor = "";
+         });
+      },
+*/
 </script>
 
 <style>
 #map {
    width: 100vw;
    height: 100vh;
-   margin: 0;
+   margin: 75px 0 0 0;
    padding: 0;
 }
 
 .marker {
    display: block;
    border: none;
-   border-radius: 50%;
    cursor: pointer;
    padding: 0;
+}
+
+.geocoder {
+   position: absolute;
+   z-index: 1;
+   width: 50%;
+   left: 50%;
+   margin-left: -25%;
+   top: 10px;
+}
+
+.mapboxgl-ctrl-geocoder {
+   min-width: 100%;
+}
+
+.mapboxgl-popup {
+   max-width: 400px;
+   font: 12px/20px "Helvetica Neue", Arial, Helvetica, sans-serif;
+}
+
+/* removing default geocoder marker from the map */
+circle,
+path,
+ellipse {
+   fill: transparent;
 }
 </style>
