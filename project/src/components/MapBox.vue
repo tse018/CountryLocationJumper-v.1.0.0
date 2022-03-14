@@ -1,8 +1,6 @@
 <template>
+   <p v-if="error">Errors: {{ error }}</p>
    <div id="geocoder" class="geocoder"></div>
-
-   <button id="fly">Go To Start posistion</button>
-
    <div id="map"></div>
 </template>
 
@@ -16,22 +14,25 @@ export default {
          mapbox_id: import.meta.env.VITE_MAPBOX_ID,
          countries: [],
          markers: [],
-         polygon: [],
-         popUp: [],
+         coordinates: [],
+         error: "",
       };
    },
 
    async created() {
       this.countries = await this.$store.dispatch("fetchCountryApi");
       this.countries = this.$store.getters.getCountries;
+      this.error = this.$store.getters.getError;
 
       // the new mapped geoJson file created in the methods, will be stored in this.markers array from data()
       this.markers = this.creatingGeoJsonMarkers();
 
-      //this.polygon
-      //this.popUp
-
+      // before creating adding mapbox map here
       this.creatingMapFromMapBox();
+   },
+
+   computed() {
+      this.error = this.$store.getters.getError;
    },
 
    methods: {
@@ -42,18 +43,70 @@ export default {
          const map = new mapboxgl.Map({
             container: "map",
             style: "mapbox://styles/mapbox/streets-v11",
-            center: [10, 30],
-            zoom: 2,
+            center: [10, 53],
+            zoom: 5,
          });
 
+         // The for...in statement iterates over all enumerable properties
+         for (const coordinates of this.markers.features) {
+            // getting the coordinates from the objects
+            const coordinate = coordinates.geometry.coordinates;
+            // {0: 147, 1: 37 }, {0: 44, 1: 35} ...etc
+
+            // [0,1] => [1,0]
+            const reversedCoordinates = coordinate.map((location) => {
+               return Object.values(coordinate).reverse();
+            });
+
+            const array = new Array(reversedCoordinates);
+            
+
+            const merge = []
+
+            merge.push(...array)
+            console.log(merge)
+
+
+/*
+            // for each values I want to jump to locations
+            map.on("load", () => {
+               for (const [index, coordinate] of merge.entries()) {
+                  console.log(index, coordinate);
+                  setTimeout(() => {
+                     map.jumpTo({ center: coordinate });
+                  }, 2000 * index);
+               }
+            });*/
+
+            //console.log(Object.entries(coordinate).map(([k, v]) => ([v, +k])));
+            //const transformToArray = obj => (Object.entries(obj).map(([k, v]) => ([v, +k])));
+            //console.log(transformToArray)
+
+            // returns {0: 1, 1: 1}
+
+            // returns values as an array
+
+            // returns two values, example [44.24, -12.166]
+
+            /*
+            const cityCoordinates = [
+               [100.507, 13.745],
+               [98.993, 18.793],
+               [99.838, 19.924],
+               [102.812, 17.408],
+               [100.458, 7.001],
+               [100.905, 12.935],
+            ];
+*/
+         }
+
+         // adding everything that needs to be part of the map in here
          this.createMarkers(map);
          this.searchLocationGeoCoder(map);
          this.navigationControllers(map);
-         this.goBackToStartPosistion(map);
          this.borderColor(map);
-         this.colorEachCountries(map);
-         //this.whenSearchedPopUpMarkersOnClicked(map);
-         //this.addPolygon(map);
+         this.locateTheUser(map);
+         //this.locationShow(map);
       },
 
       // mapping a new array of objects like how mapbox geoJson file looks like
@@ -63,13 +116,14 @@ export default {
                type: "Feature",
                properties: {
                   message: country.name.official,
-                  iconSize: [30, 30],
+                  iconSize: [20, 20],
                   title: country.name.official,
                   capital: country.capital,
                   languages: country.languages,
                   continents: country.continents[0],
                   flags: country.cca2.toLowerCase(),
                   description: country.name.offical + country.region,
+                  population: country.population,
                },
                geometry: {
                   type: "Point",
@@ -84,17 +138,9 @@ export default {
          };
       },
 
-      // working progress - adding polygon colors for each countries
-      creatingGeoJsonPolygon() {
-         map.on("load", () => {
-            map.addSource("maine", {});
-         });
-      },
-
       searchLocationGeoCoder(map) {
          const geocoder = new MapboxGeocoder({
             accessToken: mapboxgl.accessToken,
-
             mapboxgl: mapboxgl,
 
             /* geocoder input field placeholder */
@@ -120,6 +166,8 @@ export default {
          // trying to add place details when user search on a country
          geocoder.on("result", function ({ result }) {
             console.log(result.place_name);
+            // figure how to create add layer so when user search country
+            // popup will appear after the search with details about that country.
          });
 
          document.getElementById("geocoder").appendChild(geocoder.onAdd(map));
@@ -131,8 +179,11 @@ export default {
             const el = document.createElement("div");
             const width = marker.properties.iconSize[0];
             const height = marker.properties.iconSize[1];
-            el.className = "marker";
+            const countryName = marker.properties.title;
+            const countryCapital = marker.properties.capital;
+            const countryPopulation = marker.properties.population;
 
+            el.className = "marker";
             /* using countryflagsapi to get all the flags pictures to showcase as icons */
             el.style.backgroundImage = `url(https://countryflagsapi.com/svg/${marker.properties.flags})`;
             el.style.backgroundRepeat = "no-repeat";
@@ -140,12 +191,37 @@ export default {
             el.style.height = `${height}px`;
             el.style.backgroundSize = "100%";
 
+            /**************** Hover effect on popup  ************************/
+
+            // when hovering on country flag, country details will popup
+            const popUpMarker = new mapboxgl.Popup()
+
+               // creating popup markers content such as country name, capital and population
+               .setHTML(
+                  "<strong>" +
+                     countryName +
+                     "</strong>" +
+                     "<br>" +
+                     "Capital:" +
+                     " " +
+                     countryCapital +
+                     "<br>" +
+                     "Population:" +
+                     " " +
+                     countryPopulation
+               );
+
             // Add markers to the map.
             new mapboxgl.Marker(el)
                .setLngLat(marker.geometry.coordinates)
-               .setLngLat(marker.geometry.coordinates)
+               .setPopup(popUpMarker)
                .addTo(map);
          }
+
+         // mouse hover effect hide and show the popup
+         map.on("mouseenter", this.countries, (e) => {
+            map.getCanvas().style.cursor = "pointer";
+         });
       },
 
       // zoom in - out button
@@ -153,60 +229,7 @@ export default {
          map.addControl(new mapboxgl.NavigationControl());
       },
 
-      // working progress - add button to reset / go back to start posistion
-      goBackToStartPosistion(map) {
-         let isAtStart = true;
-
-         const target = isAtStart ? "" : "";
-
-         isAtStart = !isAtStart;
-
-         map.flyTo({
-            // These options control the ending camera position: centered at
-            // the target, at zoom level 9, and north up.
-            center: target,
-            zoom: 2,
-            bearing: 0,
-
-            // These options control the flight curve, making it move
-            // slowly and zoom out almost completely before starting
-            // to pan.
-            speed: 0.2, // make the flying slow
-            curve: 1, // change the speed at which it zooms out
-
-            // This can be any easing function: it takes a number between
-            // 0 and 1 and returns another number between 0 and 1.
-            easing: (t) => t,
-
-            // this animation is considered essential with respect to prefers-reduced-motion
-            essential: true,
-         });
-      },
-
-      // 
-      colorEachCountries(map) {
-         map.on("load", function () {
-            map.addLayer(
-               {
-                  id: "country-boundaries",
-                  source: {
-                     type: "vector",
-                     url: "mapbox://mapbox.country-boundaries-v1",
-                  },
-                  "source-layer": "country_boundaries",
-                  type: "fill",
-                  paint: {
-                     "fill-color": "#d2361e",
-                     "fill-opacity": 0.4,
-                  },
-               },
-               "country-label"
-            );
-
-            map.setFilter("country-boundaries", ["iso_3166_1_alpha_3"]);
-         });
-      },
-
+      // drawing a line across the country borders
       borderColor(map) {
          map.on("load", () => {
             map.addSource("country-boundaries-simplified", {
@@ -225,11 +248,27 @@ export default {
                },
                paint: {
                   "line-color":
+                     // creating random colors each time browser get refreshed
                      "#" + Math.floor(Math.random() * 16777215).toString(16),
-                  "line-width": 1,
+                  "line-width": 2,
                },
             });
          });
+      },
+
+      // if user click on this button, will show the user
+      locateTheUser(map) {
+         map.addControl(
+            new mapboxgl.GeolocateControl({
+               positionOptions: {
+                  enableHighAccuracy: true,
+               },
+               // When active the map will receive updates to the device's location as it changes.
+               trackUserLocation: true,
+               // Draw an arrow next to the location dot to indicate which direction the device is heading.
+               showUserHeading: true,
+            })
+         );
       },
    },
 };
@@ -373,31 +412,17 @@ export default {
 
 <style>
 #map {
-   width: 100vw;
-   height: 100vh;
-   margin: 75px 0 0 0;
-   padding: 0;
-}
-
-#fly {
-   display: block;
    position: relative;
-   margin: 40px auto;
-   width: 50%;
-   height: 40px;
-   padding: 10px;
-   border: none;
-   border-radius: 3px;
-   font-size: 12px;
-   text-align: center;
-   color: #fff;
-   background: #ee8a65;
+   width: 90vw;
+   height: 80vh;
+   margin: 70px auto;
+   padding: 0;
 }
 
 .geocoder {
    position: absolute;
    z-index: 1;
-   width: 50%;
+   width: 55%;
    left: 50%;
    margin-left: -25%;
    top: 10px;
@@ -409,13 +434,6 @@ export default {
 
 .mapboxgl-popup {
    max-width: 400px;
-   font: 12px/20px "Helvetica Neue", Arial, Helvetica, sans-serif;
-}
-
-/* removing default geocoder marker from the map */
-circle,
-path,
-ellipse {
-   fill: transparent;
+   font: 12px/24px "Helvetica Neue", Arial, Helvetica, sans-serif;
 }
 </style>
