@@ -13,8 +13,8 @@ export default {
       return {
          mapbox_id: import.meta.env.VITE_MAPBOX_ID,
          countries: [],
-         markers: [],
-         coordinates: [],
+         markers: {},
+         location: [],
          error: "",
       };
    },
@@ -44,61 +44,40 @@ export default {
             container: "map",
             style: "mapbox://styles/mapbox/streets-v11",
             center: [10, 53],
-            zoom: 5,
+            zoom: 2,
          });
 
-         // The for...in statement iterates over all enumerable properties
+
+         // The for...in statement iterates over all enumerable properties of this.markers.features
+
+         //console.log( this.markers.features)
+
+         // creating new empty array to store all the coordinates converted from objects
+         const newCoord = [];
+
+         // The for...in statement iterates over all enumerable properties of this.markers.features
          for (const coordinates of this.markers.features) {
             // getting the coordinates from the objects
             const coordinate = coordinates.geometry.coordinates;
             // {0: 147, 1: 37 }, {0: 44, 1: 35} ...etc
 
-            // [0,1] => [1,0]
-            const reversedCoordinates = coordinate.map((location) => {
-               return Object.values(coordinate).reverse();
-            });
+            // here I create a new array with only the object values from coordinate variable
+            const arrayCoordinate = Object.values(coordinate);
 
-            const array = new Array(reversedCoordinates);
-            
+            // here we add all the arrayCoordinates to the new list we created outside for...in loop 
+            newCoord.push(arrayCoordinate);
 
-            const merge = []
-
-            merge.push(...array)
-            console.log(merge)
-
-
-/*
-            // for each values I want to jump to locations
+            // for each index, jump to array value coordinates
             map.on("load", () => {
-               for (const [index, coordinate] of merge.entries()) {
-                  console.log(index, coordinate);
+               newCoord.map((itemC, index) => {
                   setTimeout(() => {
-                     map.jumpTo({ center: coordinate });
+                     map.jumpTo({ center: itemC });
                   }, 2000 * index);
-               }
-            });*/
-
-            //console.log(Object.entries(coordinate).map(([k, v]) => ([v, +k])));
-            //const transformToArray = obj => (Object.entries(obj).map(([k, v]) => ([v, +k])));
-            //console.log(transformToArray)
-
-            // returns {0: 1, 1: 1}
-
-            // returns values as an array
-
-            // returns two values, example [44.24, -12.166]
-
-            /*
-            const cityCoordinates = [
-               [100.507, 13.745],
-               [98.993, 18.793],
-               [99.838, 19.924],
-               [102.812, 17.408],
-               [100.458, 7.001],
-               [100.905, 12.935],
-            ];
-*/
+               });
+            });
          }
+
+         console.log(newCoord);
 
          // adding everything that needs to be part of the map in here
          this.createMarkers(map);
@@ -106,7 +85,6 @@ export default {
          this.navigationControllers(map);
          this.borderColor(map);
          this.locateTheUser(map);
-         //this.locationShow(map);
       },
 
       // mapping a new array of objects like how mapbox geoJson file looks like
@@ -122,11 +100,12 @@ export default {
                   languages: country.languages,
                   continents: country.continents[0],
                   flags: country.cca2.toLowerCase(),
-                  description: country.name.offical + country.region,
+                  description: country.name.offical,
                   population: country.population,
                },
                geometry: {
                   type: "Point",
+                  // NOTE: Mapbox API using longitude,latitude while RestCountries API using latitude, longitude
                   coordinates: [country.latlng[1], country.latlng[0]],
                },
             };
@@ -202,8 +181,7 @@ export default {
                      countryName +
                      "</strong>" +
                      "<br>" +
-                     "Capital:" +
-                     " " +
+                     "Capital: " +
                      countryCapital +
                      "<br>" +
                      "Population:" +
@@ -217,11 +195,6 @@ export default {
                .setPopup(popUpMarker)
                .addTo(map);
          }
-
-         // mouse hover effect hide and show the popup
-         map.on("mouseenter", this.countries, (e) => {
-            map.getCanvas().style.cursor = "pointer";
-         });
       },
 
       // zoom in - out button
@@ -272,6 +245,65 @@ export default {
       },
    },
 };
+
+/*
+            const coordinateArray = Object.values(coordinate);
+            console.log(coordinateArray);
+ */
+
+/*
+         coordinateArray.forEach(singleElement => {
+            newArray.push(singleElement)
+         });
+         */
+
+//console.log(newArray)
+
+//console.log(reversedCoordinates)
+
+//const newArray = new Array(reversedCoordinates)
+
+//const merge = [...reversedCoordinates]
+
+// returns [Array(2), Array(2)]
+// [0] = [4,-72]
+// [1] = [4, -72]
+/*
+            const merge = []
+            merge.push([...reversedCoordinates])
+*/
+
+/*
+            when I console.log getting bunch of Arrays ->
+            (2) [-10, -55]
+            (2) [7.5, 134.5]
+            (2) [15.5, 174.5]
+            ....etc
+*/
+
+//now I want all of the arrays into one Array like this:
+//console.log(container)
+
+//console.log(Object.entries(coordinate).map(([k, v]) => ([v, +k])));
+//const transformToArray = obj => (Object.entries(obj).map(([k, v]) => ([v, +k])));
+//console.log(transformToArray)
+
+// returns {0: 1, 1: 1}
+
+// returns values as an array
+
+// returns two values, example [44.24, -12.166]
+
+/*
+            const cityCoordinates = [
+               [100.507, 13.745],
+               [98.993, 18.793],
+               [99.838, 19.924],
+               [102.812, 17.408],
+               [100.458, 7.001],
+               [100.905, 12.935],
+            ];
+*/
 
 /*
       addPolygon(map) {
