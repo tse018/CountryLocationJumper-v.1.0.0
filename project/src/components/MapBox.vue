@@ -44,13 +44,9 @@ export default {
             container: "map",
             style: "mapbox://styles/mapbox/streets-v11",
             center: [10, 53],
-            zoom: 2,
-         });
+            zoom: 5,
+         })
 
-
-         // The for...in statement iterates over all enumerable properties of this.markers.features
-
-         //console.log( this.markers.features)
 
          // creating new empty array to store all the coordinates converted from objects
          const newCoord = [];
