@@ -18,7 +18,6 @@ import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
 export default {
    data() {
       return {
-         mapbox_id: import.meta.env.VITE_MAPBOX_ID,
          countries: [],
          markers: {},
          location: [],
