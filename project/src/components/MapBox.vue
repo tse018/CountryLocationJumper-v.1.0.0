@@ -22,6 +22,7 @@ export default {
          markers: {},
          location: [],
          error: "",
+         mapbox_id: import.meta.env.VITE_MAPBOX_ID
       };
    },
 
