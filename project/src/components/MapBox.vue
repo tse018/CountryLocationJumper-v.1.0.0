@@ -1,7 +1,14 @@
 <template>
-   <p v-if="error">Errors: {{ error }}</p>
-   <div id="geocoder" class="geocoder"></div>
-   <div id="map"></div>
+   <!-- Error handling when REST-API Fail -->
+   <p v-if="error">
+      Errors: {{ error }}
+   </p>
+   
+   <div id="geocoder" class="geocoder">
+   </div>
+
+   <div id="map">
+   </div>
 </template>
 
 <script>
@@ -45,8 +52,7 @@ export default {
             style: "mapbox://styles/mapbox/streets-v11",
             center: [10, 53],
             zoom: 5,
-         })
-
+         });
 
          // creating new empty array to store all the coordinates converted from objects
          const newCoord = [];
@@ -60,7 +66,7 @@ export default {
             // here I create a new array with only the object values from coordinate variable
             const arrayCoordinate = Object.values(coordinate);
 
-            // here we add all the arrayCoordinates to the new list we created outside for...in loop 
+            // here we add all the arrayCoordinates to the new list we created outside for...in loop
             newCoord.push(arrayCoordinate);
 
             // for each index, jump to array value coordinates
@@ -72,8 +78,6 @@ export default {
                });
             });
          }
-
-         console.log(newCoord);
 
          // adding everything that needs to be part of the map in here
          this.createMarkers(map);
@@ -90,7 +94,7 @@ export default {
                type: "Feature",
                properties: {
                   message: country.name.official,
-                  iconSize: [20, 20],
+                  iconSize: [30, 30],
                   title: country.name.official,
                   capital: country.capital,
                   languages: country.languages,
@@ -166,10 +170,11 @@ export default {
             el.style.height = `${height}px`;
             el.style.backgroundSize = "100%";
 
-            /**************** Hover effect on popup  ************************/
-
             // when hovering on country flag, country details will popup
-            const popUpMarker = new mapboxgl.Popup()
+            const popUpMarker = new mapboxgl.Popup({
+               closeButton: false,
+               closeOnClick: false,
+            })
 
                // creating popup markers content such as country name, capital and population
                .setHTML(
@@ -219,7 +224,7 @@ export default {
                   "line-color":
                      // creating random colors each time browser get refreshed
                      "#" + Math.floor(Math.random() * 16777215).toString(16),
-                  "line-width": 2,
+                  "line-width": 4,
                },
             });
          });
@@ -241,201 +246,6 @@ export default {
       },
    },
 };
-
-/*
-            const coordinateArray = Object.values(coordinate);
-            console.log(coordinateArray);
- */
-
-/*
-         coordinateArray.forEach(singleElement => {
-            newArray.push(singleElement)
-         });
-         */
-
-//console.log(newArray)
-
-//console.log(reversedCoordinates)
-
-//const newArray = new Array(reversedCoordinates)
-
-//const merge = [...reversedCoordinates]
-
-// returns [Array(2), Array(2)]
-// [0] = [4,-72]
-// [1] = [4, -72]
-/*
-            const merge = []
-            merge.push([...reversedCoordinates])
-*/
-
-/*
-            when I console.log getting bunch of Arrays ->
-            (2) [-10, -55]
-            (2) [7.5, 134.5]
-            (2) [15.5, 174.5]
-            ....etc
-*/
-
-//now I want all of the arrays into one Array like this:
-//console.log(container)
-
-//console.log(Object.entries(coordinate).map(([k, v]) => ([v, +k])));
-//const transformToArray = obj => (Object.entries(obj).map(([k, v]) => ([v, +k])));
-//console.log(transformToArray)
-
-// returns {0: 1, 1: 1}
-
-// returns values as an array
-
-// returns two values, example [44.24, -12.166]
-
-/*
-            const cityCoordinates = [
-               [100.507, 13.745],
-               [98.993, 18.793],
-               [99.838, 19.924],
-               [102.812, 17.408],
-               [100.458, 7.001],
-               [100.905, 12.935],
-            ];
-*/
-
-/*
-      addPolygon(map) {
-         map.on("load", () => {
-            // Add a data source containing GeoJSON data.
-            map.addSource("maine", {
-               type: "geojson",
-               data: {
-                  type: "Feature",
-                  geometry: {
-                     type: "Polygon",
-                     // These coordinates outline Maine.
-                     coordinates: [
-                        [
-                           [-67.13734, 45.13745],
-                           [-66.96466, 44.8097],
-                           [-68.03252, 44.3252],
-                           [-69.06, 43.98],
-                           [-70.11617, 43.68405],
-                           [-70.64573, 43.09008],
-                           [-70.75102, 43.08003],
-                           [-70.79761, 43.21973],
-                           [-70.98176, 43.36789],
-                           [-70.94416, 43.46633],
-                           [-71.08482, 45.30524],
-                           [-70.66002, 45.46022],
-                           [-70.30495, 45.91479],
-                           [-70.00014, 46.69317],
-                           [-69.23708, 47.44777],
-                           [-68.90478, 47.18479],
-                           [-68.2343, 47.35462],
-                           [-67.79035, 47.06624],
-                           [-67.79141, 45.70258],
-                           [-67.13734, 45.13745],
-                        ],
-                     ],
-                  },
-               },
-            });
-         });
-
-         // Add a new layer to visualize the polygon.
-         map.addLayer({
-            id: "maine",
-            type: "fill",
-            source: "maine", // reference the data source
-            layout: {},
-            paint: {
-               "fill-color": "#0080ff", // blue color fill
-               "fill-opacity": 0.5,
-            },
-         });
-
-         // Add a black outline around the polygon.
-         map.addLayer({
-            id: "outline",
-            type: "line",
-            source: "maine",
-            layout: {},
-            paint: {
-               "line-color": "#000",
-               "line-width": 3,
-            },
-         });
-      },
-*/
-
-/*
-      whenSearchedPopUpMarkersOnClicked(map) {
-         map.on("load", () => {
-            map.addSource("places", {
-               type: "Feature",
-               properties: {
-                  message: country.name.official,
-                  iconSize: [30, 30],
-                  title: country.name.official,
-                  capital: country.capital,
-                  languages: country.languages,
-                  continents: country.continents[0],
-                  flags: country.cca2.toLowerCase(),
-                  description: country.name.offical + country.region,
-               },
-               geometry: {
-                  type: "Point",
-                  coordinates: [country.latlng[1], country.latlng[0]],
-               },
-            });
-
-            return {
-               type: "FeatureCollection",
-               features: countryDetails,
-            };
-         });
-
-         // Add a layer showing the places.
-         map.addLayer({
-            id: "places",
-            type: "symbol",
-            source: "places",
-            layout: {
-               "icon-image": "{icon}",
-               "icon-allow-overlap": true,
-            },
-         });
-
-         // When a click event occurs on a feature in the places layer, open a popup at the
-         // location of the feature, with description HTML from its properties.
-         map.on("click", "places", (e) => {
-            // Copy coordinates array.
-            const coordinates = e.features[0].geometry.coordinates.slice();
-            const description = e.features[0].properties.description;
-
-            // Ensure that if the map is zoomed out such that multiple
-            // copies of the feature are visible, the popup appears
-            // over the copy being pointed to.
-            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-               coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-            }
-
-            new mapboxgl.Popup()
-               .setLngLat(coordinates)
-               .setHTML(description)
-               .addTo(map);
-         });
-
-         // Change the cursor to a pointer when the mouse is over the places layer.
-         map.on("mouseenter", "places", () => {
-            map.getCanvas().style.cursor = "pointer";
-         });
-
-         // Change it back to a pointer when it leaves.
-         map.on("mouseleave", "places", () => {
-            map.getCanvas().style.cursor = "";
-         });
-      },
-*/
 </script>
 
 <style>
