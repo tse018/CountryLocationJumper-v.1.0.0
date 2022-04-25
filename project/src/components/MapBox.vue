@@ -1,14 +1,15 @@
 <template>
-   <!-- Error handling when REST-API Fail -->
-   <p v-if="error">
-      Errors: {{ error }}
-   </p>
-   
-   <div id="geocoder" class="geocoder">
-   </div>
+   <section v-if="error">
+      <p>
+         Errors: {{ error }}
+      </p>
+   </section>
 
-   <div id="map">
-   </div>
+   <section v-else>
+      <div id="geocoder" class="geocoder"></div>
+
+      <div id="map"></div>
+   </section>
 </template>
 
 <script>
