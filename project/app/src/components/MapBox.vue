@@ -7,7 +7,6 @@
 
    <section v-else>
       <div id="geocoder" class="geocoder"></div>
-
       <div id="map"></div>
    </section>
 </template>
