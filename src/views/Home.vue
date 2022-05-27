@@ -15,7 +15,11 @@
 import mapboxgl from "mapbox-gl";
 import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
 
+import seoMixin from "../mixins/seoMixin.js";
+
 export default {
+   mixins: [seoMixin], 
+
    data() {
       return {
          countries: [],
@@ -36,6 +40,10 @@ export default {
 
       // before creating adding mapbox map here
       this.creatingMapFromMapBox();
+
+      this.metaTags({
+         title: 'Country Location Jumper',
+		});
    },
 
    computed() {
@@ -44,12 +52,12 @@ export default {
 
    methods: {
       creatingMapFromMapBox() {
-         mapboxgl.accessToken = this.mapbox_id;
+         mapboxgl.accessToken = "pk.eyJ1IjoidHNlMDE4IiwiYSI6ImNsMmtkczJ2ZTAybmozY25reXE3MXpmMWUifQ.sm5TPLNYLn4Ozr1r7TCCZQ";
 
          // creating the map to the browser and giving start posistion
          const map = new mapboxgl.Map({
             container: "map",
-            style: "mapbox://styles/mapbox/streets-v11",
+            style: "mapbox://styles/tse018/cl3fy4bep000i14qii6hxjxt0",
             center: [10, 53],
             zoom: 5,
          });
@@ -222,7 +230,7 @@ export default {
                },
                paint: {
                   "line-color":
-                     // creating random colors each time browser get refreshed
+                     // creating random colors each time browser get refreshed just for fun
                      "#" + Math.floor(Math.random() * 16777215).toString(16),
                   "line-width": 4,
                },
@@ -272,6 +280,5 @@ export default {
 
 .mapboxgl-popup {
    max-width: 400px;
-   font: 12px/24px "Helvetica Neue", Arial, Helvetica, sans-serif;
 }
 </style>
