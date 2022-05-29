@@ -1,14 +1,14 @@
 <template>
-   <section v-if="error">
+   <template v-if="error">
       <p>
          Errors: {{ error }}
       </p>
-   </section>
+   </template>
 
-   <section v-else>
+   <template v-else>
       <div id="geocoder" class="geocoder"></div>
       <div id="map"></div>
-   </section>
+   </template>
 </template>
 
 <script>
@@ -46,6 +46,7 @@ export default {
    },
 
    computed() {
+      // getting error message from Vuex store
       this.error = this.$store.getters.getError;
    },
 
@@ -149,13 +150,6 @@ export default {
             },
          });
 
-         // trying to add place details when user search on a country
-         geocoder.on("result", function ({ result }) {
-            console.log(result.place_name);
-            // figure how to create add layer so when user search country
-            // popup will appear after the search with details about that country.
-         });
-
          document.getElementById("geocoder").appendChild(geocoder.onAdd(map));
       },
 
@@ -170,14 +164,14 @@ export default {
             const countryPopulation = marker.properties.population;
 
             el.className = "marker";
-            /* using countryflagsapi to get all the flags pictures to showcase as icons */
+            /* using third-part REST api called countryflagsapi to get all the flags pictures to showcase as icons */
             el.style.backgroundImage = `url(https://countryflagsapi.com/svg/${marker.properties.flags})`;
             el.style.backgroundRepeat = "no-repeat";
             el.style.width = `${width}px`;
             el.style.height = `${height}px`;
             el.style.backgroundSize = "100%";
 
-            // when hovering on country flag, country details will popup
+            // when hovering on country flag, country details will popup on click
             const popUpMarker = new mapboxgl.Popup({
                closeButton: false,
                closeOnClick: false,
