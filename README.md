@@ -1,4 +1,4 @@
-# Mapbox Country API
+# Mapbox Country Jumper Show
 In this prosject creating map by using Mapbox-gl and showcase countries details with rest-api called RestCountries.
 
 Features in this project: 
