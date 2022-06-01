@@ -26,6 +26,7 @@ export default {
          markers: {},
          location: [],
          error: "",
+         map: import.meta.env.VITE_YOUSNJFSNIJNSNFNFOFNFJFOSMFFMFFLFMFMDJFJILO
       };
    },
 
@@ -52,7 +53,7 @@ export default {
 
    methods: {
       creatingMapFromMapBox() {
-         mapboxgl.accessToken = "pk.eyJ1IjoidHNlMDE4IiwiYSI6ImNsMmtkczJ2ZTAybmozY25reXE3MXpmMWUifQ.sm5TPLNYLn4Ozr1r7TCCZQ";
+         mapboxgl.accessToken = this.map
 
          // creating the map to the browser and giving start posistion
          const map = new mapboxgl.Map({
