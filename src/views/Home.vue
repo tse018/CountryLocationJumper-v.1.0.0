@@ -1,14 +1,14 @@
 <template>
-   <template v-if="error">
+   <div v-if="error">
       <p>
-         Errors: {{ error }}
+         Errors: {{ getError }}
       </p>
-   </template>
+   </div>
 
-   <template v-else>
+   <div v-else>
       <div id="geocoder" class="geocoder"></div>
       <div id="map"></div>
-   </template>
+   </div>
 </template>
 
 <script>
@@ -25,7 +25,7 @@ export default {
          countries: [],
          markers: {},
          location: [],
-         error: "",
+         error: false,
          map: import.meta.env.VITE_YOUSNJFSNIJNSNFNFOFNFJFOSMFFMFFLFMFMDJFJILO
       };
    },
@@ -46,9 +46,11 @@ export default {
 		});
    },
 
-   computed() {
-      // getting error message from Vuex store
-      this.error = this.$store.getters.getError;
+   computed: {
+      getError() {
+         // getting error message from Vuex store
+         this.error = this.$store.getters.getError;
+      },
    },
 
    methods: {
