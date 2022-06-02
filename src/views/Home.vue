@@ -6,14 +6,12 @@
    </div>
 
    <div v-else>
-      <div id="geocoder" class="geocoder"></div>
       <div id="map"></div>
    </div>
 </template>
 
 <script>
 import mapboxgl from "mapbox-gl";
-import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
 
 import seoMixin from "../mixins/seoMixin.js";
 
@@ -92,10 +90,7 @@ export default {
 
          // adding everything that needs to be part of the map in here
          this.createMarkers(map);
-         this.searchLocationGeoCoder(map);
-         this.navigationControllers(map);
          this.borderColor(map);
-         this.locateTheUser(map);
       },
 
       // mapping a new array of objects like how mapbox geoJson file looks like
@@ -128,33 +123,6 @@ export default {
          };
       },
 
-      searchLocationGeoCoder(map) {
-         const geocoder = new MapboxGeocoder({
-            accessToken: mapboxgl.accessToken,
-            mapboxgl: mapboxgl,
-
-            /* geocoder input field placeholder */
-            placeholder: "Search for a country",
-
-            /* adding easing in-out animation when searching for country  */
-            flyTo: {
-               bearing: 0,
-
-               // Control the flight curve, making it move slowly and
-               // zoom out almost completely before starting to pan.
-               speed: 0.2, // Make the flying slow.
-               curve: 4, // Change the speed at which it zooms out.
-
-               // This can be any easing function: it takes a number between
-               // 0 and 1 and returns another number between 0 and 1.
-               easing: (posistion) => {
-                  return posistion;
-               },
-            },
-         });
-
-         document.getElementById("geocoder").appendChild(geocoder.onAdd(map));
-      },
 
       createMarkers(map) {
          for (const marker of this.markers.features) {
@@ -201,12 +169,7 @@ export default {
                .addTo(map);
          }
       },
-
-      // zoom in - out button
-      navigationControllers(map) {
-         map.addControl(new mapboxgl.NavigationControl());
-      },
-
+      
       // drawing a line across the country borders
       borderColor(map) {
          map.on("load", () => {
@@ -234,20 +197,6 @@ export default {
          });
       },
 
-      // if user click on this button, will show the user
-      locateTheUser(map) {
-         map.addControl(
-            new mapboxgl.GeolocateControl({
-               positionOptions: {
-                  enableHighAccuracy: true,
-               },
-               // When active the map will receive updates to the device's location as it changes.
-               trackUserLocation: true,
-               // Draw an arrow next to the location dot to indicate which direction the device is heading.
-               showUserHeading: true,
-            })
-         );
-      },
    },
 };
 </script>
